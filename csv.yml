@@ -1,0 +1,65 @@
+---
+- name: Extract latest updated billing row(s) in last 15 minutes (IST)
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    csv_path: "/var/lib/awx/projects/ruthupavan/billing.csv"
+    datetime_format: "%Y-%m-%d %H:%M:%S"
+
+  tasks:
+    - name: Load CSV content
+      slurp:
+        src: "{{ csv_path }}"
+      register: raw_csv
+
+    - name: Split into lines
+      set_fact:
+        csv_lines: "{{ raw_csv.content | b64decode | split('\n') }}"
+
+    - name: Separate header and data
+      set_fact:
+        csv_header: "{{ csv_lines[0] }}"
+        csv_data: "{{ csv_lines[1:] }}"
+
+    - name: Get IST current time and 15 minutes ago
+      set_fact:
+        now_ist: "{{ lookup('pipe', 'TZ=Asia/Kolkata date +\"%Y-%m-%d %H:%M:%S\"') | to_datetime(datetime_format) }}"
+        fifteen_min_ago_ist: "{{ lookup('pipe', 'TZ=Asia/Kolkata date -d \"-15 minutes\" +\"%Y-%m-%d %H:%M:%S\"') | to_datetime(datetime_format) }}"
+     
+    - name: Show IST time references
+      debug:
+        msg:
+          - "Current IST Time: {{ now_ist }}"
+          - "15 Minutes Ago: {{ fifteen_min_ago_ist }}"
+
+    - name: Filter rows within last 15 minutes and collect timestamp-row map
+      set_fact:
+        recent_time_row_pairs: "{{ recent_time_row_pairs | default([]) + [ { 'ts': row_ts, 'row': item } ] }}"
+      vars:
+        row_ts: "{{ item.split(',')[5] | to_datetime(datetime_format) }}"
+      loop: "{{ csv_data }}"
+      loop_control:
+        loop_var: item
+      when: >
+        item.split(',')[5] is defined and
+        item.split(',')[5] != '' and
+        (row_ts >= fifteen_min_ago_ist) and
+        (row_ts <= now_ist)
+
+    - name: Find the maximum timestamp
+      set_fact:
+        max_timestamp: "{{ recent_time_row_pairs | map(attribute='ts') | max }}"
+
+    - name: Extract row(s) with the max timestamp
+      set_fact:
+        latest_rows: "{{ recent_time_row_pairs | selectattr('ts', 'equalto', max_timestamp) | map(attribute='row') | list }}"
+
+    - name: Display most recent row(s) updated in the last 15 minutes
+      debug:
+        var: latest_rows
+ 
+    - name: Save latest row(s) to updated.csv
+      copy:
+        dest: "/var/lib/awx/projects/ruthupavan/updated.csv"
+        content: "{{ ([csv_header] + latest_rows) | join('\n') }}"

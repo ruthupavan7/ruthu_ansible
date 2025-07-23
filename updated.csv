@@ -1,0 +1,2 @@
+Billing_ID,Header_ID,Transaction_Count,Total_Amount,Customer_ID,Processing_Time(IST),Status
+BILL2010,HEAD-X4,18,8800.00,CUST3010,2025-06-12 12:20:10,Success

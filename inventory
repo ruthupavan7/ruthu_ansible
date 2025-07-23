@@ -1,0 +1,43 @@
+[ubuntu_server]
+172.16.3.75 ansible_user=imss ansible_ssh_password=int123$%^
+
+[linux_server]
+172.16.3.95 ansible_user=root ansible_ssh_password=imss@!345
+#172.16.3.75 ansible_user=imss ansible_ssh_password=int123$%^
+172.16.3.88 ansible_user=root ansible_ssh_password=int123$%^
+172.16.3.42 ansible_user=devops ansible_ssh_password=int123$%^
+
+[windows_server]
+172.16.3.60 ansible_user=integra ansible_ssh_password=int123$%^
+172.16.3.10
+[windows_server:vars]
+#ansible_user=integra
+ansible_user=Administrator
+#ansible_user=admin
+ansible_password=int123$%^
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore
+ansible_port=5986
+ansible_become=no
+
+[myhost]
+172.16.3.88
+
+[test_servers:children]
+linux_server
+windows_server
+ubuntu_server
+
+[pgmaster]
+node1 ansible_host=172.16.3.107  ansible_connection=ssh ansible_ssh_user=root ansible_ssh_password=imss@!345
+
+[pgslave]
+node2 ansible_host=172.16.3.79  ansible_connection=ssh ansible_ssh_user=root ansible_ssh_password=imss@!345
+
+[postgres:children]
+pgmaster
+pgslave
+
+[database]
+#172.16.3.41 ansible_connection=ssh ansible_user=root ansible_ssh_password=Twr@!345
+172.16.3.42 ansible_connection=ssh ansible_user=root ansible_ssh_password=Twr@!345

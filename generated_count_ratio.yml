@@ -1,0 +1,36 @@
+---
+- name: Generate full calltype summary with response ratio
+  hosts: 172.16.3.42
+  gather_facts: false
+ 
+  vars:
+    input_csv: "/var/lib/awx/projects/ruthupavan/extracted.csv"
+    output_csv: "/var/lib/awx/projects/ruthupavan/final_calltype_summary.csv"
+ 
+  tasks:
+ 
+    #- name: Create output CSV header
+      # shell: echo "AccountName,SystemID,SubmitCount,ResponseCount,ResponseRatio" > "{{ output_csv }}"
+
+    - name: Generate final summary with ratio
+      shell: |
+        echo "AccountName,SystemID,SubmitCount,ResponseCount,ResponseRatio" > "{{ output_csv }}"
+        tail -n +2 "{{ input_csv }}" | \
+        awk -F',' '
+        {
+          key = $2 "," $3
+          if ($1 == 1) submit[key]++
+          else if ($1 == 2) response[key]++
+        }
+        END {
+          for (k in submit) {
+            split(k, a, ",")
+            s = submit[k]; r = response[k]+0
+            printf "%s,%s,%d,%d,%.2f%%\n", a[1], a[2], s, r, ((s - r) / s) * 100
+          }
+          for (k in response)
+            if (!(k in submit)) {
+              split(k, a, ",")
+              printf "%s,%s,0,%d,0.00%%\n", a[1], a[2], response[k]
+            }
+        }' >> "{{ output_csv }}"

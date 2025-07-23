@@ -1,0 +1,44 @@
+---
+- name: Filter and calculate latency for Call Type 2
+  hosts: 172.16.3.42
+  gather_facts: no
+  vars:
+    source_csv: "/var/lib/awx/projects/ruthupavan/extracted_5.csv"
+    dest_csv: "/var/lib/awx/projects/ruthupavan/"
+    final_csv: "/var/lib/awx/projects/ruthupavan/"
+
+  tasks:
+    - name: Ensure source CSV exists
+      stat:
+        path: "{{ source_csv }}"
+      register: src_stat
+
+    - name: Extract rows with Call Type 2 and compute latency
+      shell: |
+        awk -F',' '
+        BEGIN {
+          OFS = ","
+        }
+        NR == 1 {
+          print $0, "LATENCY"
+        }
+        NR > 1 && $1 == "2" {
+          split($2, s, "-")
+          split($3, r, "-")
+
+          st = mktime(s[1]" "s[2]" "s[3]" "substr(s[4],1,2)" "substr(s[4],4,2)" "substr(s[4],7,2))
+          rt = mktime(r[1]" "r[2]" "r[3]" "substr(r[4],1,2)" "substr(r[4],4,2)" "substr(r[4],7,2))
+
+          diff = rt - st
+          min = int(diff / 60)
+          sec = diff % 60
+
+          latency = sprintf("%02d:%02d sec", min, sec)
+          print $0, latency
+        }
+        ' "{{ source_csv }}" > "{{ final_csv }}"
+      args:
+        executable: /bin/bash
+      when: src_stat.stat.exists
+
+

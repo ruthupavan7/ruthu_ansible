@@ -1,0 +1,16 @@
+---
+- name: send a message to email
+  hosts: 172.16.3.42
+  tasks:
+    - name: send a message to email
+      mail:
+        host: smtp.zoho.in
+        port: 465
+        username: ruthu.pavan@imss.co.in
+        password: PdTAyqnr6AHb
+        from: Ruthu Pavan Nethinti <ruthu.pavan@imss.co.in>
+        to: Rajasekhar reddy  <rajasekhar.reddy@imss.co.in>
+        subject: "Final summary report"
+        attach:
+          - "/var/lib/awx/projects/ruthupavan/final_calltype_summary.csv"
+

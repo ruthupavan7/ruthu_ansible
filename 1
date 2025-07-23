@@ -1,0 +1,37 @@
+---
+- name: Extract billing rows from last 15 minutes (IST)
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    csv_path: "/var/lib/awx/projects/ruthupavan/billing.csv"
+    datetime_format: "%Y-%m-%d %H:%M:%S"
+
+  tasks:
+    - name: Load CSV file
+      slurp:
+        path: "{{ csv_path }}"
+      register: csv_data
+
+    - name: Get current IST time and 15 minutes ago
+      set_fact:
+        current_time_ist: "{{ lookup('pipe', 'TZ=Asia/Kolkata date +\"%Y-%m-%d %H:%M:%S\"') | to_datetime(datetime_format) }}"
+        fifteen_min_ago_ist: "{{ lookup('pipe', 'TZ=Asia/Kolkata date -d \"-15 minutes\" +\"%Y-%m-%d %H:%M:%S\"') | to_datetime(datetime_format) }}"
+
+    - name: Create empty list for recent records
+      set_fact:
+        recent_records: []
+
+    - name: Filter entries from last 15 minutes
+      set_fact:
+        recent_records: "{{ recent_records + [item] }}"
+      loop: "{{ csv_data.list }}"
+      when: >
+        (item['Processing_Time(IST)'] is defined) and
+        (item['Processing_Time(IST)'] | to_datetime(datetime_format) >= fifteen_min_ago_ist) and
+        (item['Processing_Time(IST)'] | to_datetime(datetime_format) <= current_time_ist)
+
+    - name: Show recent records
+      debug:
+        var: recent_records
+

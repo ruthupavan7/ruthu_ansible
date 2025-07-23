@@ -1,0 +1,32 @@
+---
+- name: Filter Call Type 2 rows and rename column
+  hosts: 172.16.3.42
+  gather_facts: no
+  vars:
+    source_csv: "/var/lib/awx/projects/ruthupavan/extracted_5.csv"
+    dest_csv: "/var/lib/awx/projects/ruthupavan/callType2.csv"
+
+  tasks:
+
+    - name: Check if source CSV exists
+      stat:
+        path: "{{ source_csv }}"
+      register: src_stat
+
+    - name: Fail if source CSV is missing
+      fail:
+        msg: "Source CSV file '{{ source_csv }}' does not exist."
+      when: not src_stat.stat.exists | default(false)
+
+    - name: Extract rows where Call Type = 2
+      shell: |
+        awk -F',' 'NR==1 || $1=="2" {print}' "{{ source_csv }}" > "{{ dest_csv }}"
+      args:
+        executable: /bin/bash
+
+    - name: Rename 'LATENCY' to 'RESPONSE TIME' in header
+      shell: |
+        sed -i '1s/LATENCY/RESPONSE TIME/' "{{ dest_csv }}"
+      args:
+        executable: /bin/bash
+

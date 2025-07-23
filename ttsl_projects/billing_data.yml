@@ -1,0 +1,82 @@
+---
+- name: CDR Processing Automation Playbook
+  hosts: db_server
+  vars:
+    db_user: your_db_user
+    db_pass: your_db_password
+    db_conn: fxnatuat
+    cap_name: cap03
+    cap_id: 21
+    log_path: /path/to/log/folder
+    miu_name: miu15
+
+  tasks:
+
+    - name: Step 1 - Get external_id from temp_ansible_poc
+      shell: |
+        echo "SELECT external_id FROM arbor.temp_ansible_poc;" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+      register: external_id_result
+
+    - name: Parse external_id
+      set_fact:
+        external_id: "{{ external_id_result.stdout_lines[-1] | trim }}"
+
+    - name: Step 2 - Search MIUB logs
+      shell: |
+        ls -lrt {{ log_path }}/{{ miu_name }}* | tail
+      register: log_check
+
+    - name: Step 3 - Get latest file_id from file_status
+      shell: |
+        echo "SELECT file_id FROM file_status ORDER BY ENTRY_CREATE_DT DESC;" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+      register: file_id_result
+
+    - name: Parse file_id
+      set_fact:
+        file_id: "{{ file_id_result.stdout_lines[-1] | trim }}"
+
+    - name: Step 4a - Delete process sched
+      shell: |
+        echo "DELETE FROM PROCESS_SCHED@{{ db_conn }} WHERE PROCESS_NAME LIKE '%{{ cap_name }}%';" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+
+    - name: Step 4b - Delete process status
+      shell: |
+        echo "DELETE FROM PROCESS_STATUS@{{ db_conn }} WHERE PROCESS_NAME LIKE '%{{ cap_name }}%';" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+
+    - name: Step 4c - Insert new schedule for cap process
+      shell: |
+        echo "INSERT INTO PROCESS_SCHED@{{ db_conn }} (PROCESS_NAME,TASK_NAME,TASK_CYCLE,TASK_MODE,SCHED_START,TASK_INTRVL,TASK_STATUS,TASK_PRIORITY,SLIDE_TIME,DB_NAME,SQL_QUERY,DEBUG_LEVEL,PLAT_ID,USG_CRT_HOUR,USG_PLAT_ID,USG_VERSION) VALUES ('{{ cap_name }}','{{ cap_name }}','N ',0,TO_DATE('01-JAN-06','DD-MON-RR'),86400,0,0,0,'{{ db_conn }}','file_status.file_id={{ file_id }}',0,NULL,NULL,NULL,NULL);" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+
+    - name: Step 5 - Submit CAP process
+      shell: |
+        cd /path/to/bin && ./CAP {{ cap_name }} {{ cap_id }} &
+
+    - name: Step 6 - Insert file_status from fxadmuat
+      shell: |
+        echo "INSERT INTO file_status@{{ db_conn }} SELECT * FROM file_status@fxadmuat WHERE file_id IN ({{ file_id }});" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+
+    - name: Step 7 - Check file_status errors
+      shell: |
+        echo "SELECT NUM_GOOD, NUM_SOFT_ERRORS, NUM_HARD_ERRORS FROM file_status@{{ db_conn }} WHERE file_id = {{ file_id }};" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+      register: status_check
+
+    - name: Display success/error stats
+      debug:
+        msg: "{{ status_check.stdout_lines }}"
+
+    - name: Step 8 - Check CDR_DATA success
+      shell: |
+        echo "SELECT COUNT(*) FROM cdr_data@{{ db_conn }} WHERE file_id = {{ file_id }};" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+      register: cdr_success
+
+    - name: Step 9 - Check CDR_DATA_WORK errors
+      shell: |
+        echo "SELECT COUNT(*) FROM cdr_data_work@fxadmuat WHERE file_id = {{ file_id }};" | sqlplus -s {{ db_user }}/{{ db_pass }}@{{ db_conn }}
+      register: cdr_errors
+
+    - name: Show final CDR counts
+      debug:
+        msg:
+          - "CDR_DATA Success: {{ cdr_success.stdout }}"
+          - "CDR_DATA_WORK Errors: {{ cdr_errors.stdout }}"
+

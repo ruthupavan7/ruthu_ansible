@@ -1,0 +1,44 @@
+---
+- name: Merge CSV rows updated in last 15 minutes (IST)
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    input_dir: "/tmp/billing_files"
+    output_file: "/tmp/billing.csv"
+
+  tasks:
+    - name: Create empty output file
+      copy:
+        dest: "{{ output_file }}"
+        content: ""
+
+    - name: Add CSV header to output file
+      shell: |
+        head -n 1 {{ item }} > {{ output_file }}
+      args:
+        executable: /bin/bash
+      loop:
+        - "{{ input_dir }}/billiing_1.csv"
+      when: inventory_hostname == 'localhost'
+
+    - name: Append filtered rows (last 15 minutes) to output file
+      shell: |
+        now=$(date +'%s')
+        cutoff=$(date --date='15 minutes ago' +'%s')
+        tail -n +2 {{ item }} | while IFS=',' read -r Billing_ID Header_ID Transaction_Count Total_Amount Customer_ID Processing_Time Status
+        do
+          row_time=$(date -d "$Processing_Time" +'%s' 2>/dev/null)
+          if [[ "$row_time" -ge "$cutoff" && "$row_time" -le "$now" ]]; then
+            echo "$Billing_ID,$Header_ID,$Transaction_Count,$Total_Amount,$Customer_ID,$Processing_Time,$Status" >> {{ output_file }}
+          fi
+        done
+      args:
+        executable: /bin/bash
+      loop:
+        - "{{ input_dir }}/billing_1.csv"
+        - "{{ input_dir }}/billing_2.csv"
+        - "{{ input_dir }}/billing_3.csv"
+        - "{{ input_dir }}/billing_4.csv"
+        - "{{ input_dir }}/billing_5.csv"
+

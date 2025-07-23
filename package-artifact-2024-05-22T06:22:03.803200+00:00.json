@@ -1,0 +1,180 @@
+{
+    "plays": [
+        {
+            "__play_name": "package installation",
+            "name": "package installation",
+            "pattern": "172.16.3.16",
+            "play": "package installation",
+            "play_pattern": "172.16.3.16",
+            "play_uuid": "9686b609-970b-0240-8173-000000000007",
+            "playbook": "/var/lib/awx/projects/ruthupavan/package.yml",
+            "playbook_uuid": "29ecfd78-e3af-4a05-8698-011f03c7a6b3",
+            "tasks": [],
+            "uuid": "9686b609-970b-0240-8173-000000000007"
+        }
+    ],
+    "settings_entries": {
+        "ansible-navigator": {
+            "ansible": {
+                "config": {
+                    "help": false
+                },
+                "doc": {
+                    "help": false,
+                    "plugin": {
+                        "type": "module"
+                    }
+                },
+                "inventory": {
+                    "entries": [
+                        "/var/lib/awx/projects/rajasekhar/inventory"
+                    ],
+                    "help": false
+                },
+                "playbook": {
+                    "help": false,
+                    "path": "/var/lib/awx/projects/ruthupavan/package.yml"
+                }
+            },
+            "ansible-builder": {
+                "help": false,
+                "workdir": "/var/lib/awx/projects/ruthupavan"
+            },
+            "ansible-runner": {
+                "job-events": false
+            },
+            "app": "run",
+            "collection-doc-cache-path": "/var/lib/awx/.cache/ansible-navigator/collection_doc_cache.db",
+            "color": {
+                "enable": true,
+                "osc4": true
+            },
+            "editor": {
+                "command": "vi +{line_number} {filename}",
+                "console": true
+            },
+            "enable-prompts": false,
+            "exec": {
+                "command": "/bin/bash",
+                "shell": true
+            },
+            "execution-environment": {
+                "container-engine": "podman",
+                "enabled": true,
+                "image": "registry.redhat.io/ansible-automation-platform-24/ee-supported-rhel8:latest",
+                "pull": {
+                    "policy": "tag"
+                }
+            },
+            "format": "yaml",
+            "images": {
+                "details": [
+                    "everything"
+                ]
+            },
+            "logging": {
+                "append": true,
+                "file": "/var/lib/awx/projects/ruthupavan/ansible-navigator.log",
+                "level": "warning"
+            },
+            "mode": "stdout",
+            "playbook-artifact": {
+                "enable": true,
+                "save-as": "{playbook_dir}/{playbook_name}-artifact-{time_stamp}.json"
+            },
+            "settings": {
+                "effective": false,
+                "sample": false,
+                "schema": "json",
+                "sources": false
+            },
+            "time-zone": "UTC"
+        }
+    },
+    "settings_sources": {
+        "ansible-navigator.ansible-builder.help": "Defaults",
+        "ansible-navigator.ansible-builder.workdir": "Defaults",
+        "ansible-navigator.ansible-lint.config": "Not set",
+        "ansible-navigator.ansible-lint.lintables": "Not set",
+        "ansible-navigator.ansible-runner.artifact-dir": "Not set",
+        "ansible-navigator.ansible-runner.job-events": "Defaults",
+        "ansible-navigator.ansible-runner.rotate-artifacts-count": "Not set",
+        "ansible-navigator.ansible-runner.timeout": "Not set",
+        "ansible-navigator.ansible.cmdline": "Not set",
+        "ansible-navigator.ansible.config.help": "Defaults",
+        "ansible-navigator.ansible.config.path": "Not set",
+        "ansible-navigator.ansible.doc.help": "Defaults",
+        "ansible-navigator.ansible.doc.plugin.name": "Not set",
+        "ansible-navigator.ansible.doc.plugin.type": "Defaults",
+        "ansible-navigator.ansible.inventory.entries": "Ansible configuration file",
+        "ansible-navigator.ansible.inventory.help": "Defaults",
+        "ansible-navigator.ansible.playbook.help": "Defaults",
+        "ansible-navigator.ansible.playbook.path": "Command line",
+        "ansible-navigator.app": "Command line",
+        "ansible-navigator.collection-doc-cache-path": "Defaults",
+        "ansible-navigator.color.enable": "Defaults",
+        "ansible-navigator.color.osc4": "Defaults",
+        "ansible-navigator.editor.command": "Defaults",
+        "ansible-navigator.editor.console": "Defaults",
+        "ansible-navigator.enable-prompts": "Defaults",
+        "ansible-navigator.exec.command": "Defaults",
+        "ansible-navigator.exec.shell": "Defaults",
+        "ansible-navigator.execution-environment.container-engine": "Automatically determined",
+        "ansible-navigator.execution-environment.container-options": "Not set",
+        "ansible-navigator.execution-environment.enabled": "Defaults",
+        "ansible-navigator.execution-environment.environment-variables.pass": "Not set",
+        "ansible-navigator.execution-environment.environment-variables.set": "Not set",
+        "ansible-navigator.execution-environment.image": "Defaults",
+        "ansible-navigator.execution-environment.pull.arguments": "Not set",
+        "ansible-navigator.execution-environment.pull.policy": "Defaults",
+        "ansible-navigator.execution-environment.volume-mounts": "Not set",
+        "ansible-navigator.format": "Defaults",
+        "ansible-navigator.images.details": "Defaults",
+        "ansible-navigator.inventory-columns": "Not set",
+        "ansible-navigator.logging.append": "Defaults",
+        "ansible-navigator.logging.file": "Defaults",
+        "ansible-navigator.logging.level": "Defaults",
+        "ansible-navigator.mode": "Command line",
+        "ansible-navigator.playbook-artifact.enable": "Defaults",
+        "ansible-navigator.playbook-artifact.replay": "Not set",
+        "ansible-navigator.playbook-artifact.save-as": "Defaults",
+        "ansible-navigator.settings.effective": "Defaults",
+        "ansible-navigator.settings.sample": "Defaults",
+        "ansible-navigator.settings.schema": "Defaults",
+        "ansible-navigator.settings.sources": "Defaults",
+        "ansible-navigator.time-zone": "Defaults",
+        "settings_file_path": "None",
+        "settings_file_source": "None"
+    },
+    "status": "successful",
+    "status_color": 10,
+    "stdout": [
+        "\u001b[1;35m[WARNING]:  * Failed to parse /var/lib/awx/projects/rajasekhar/inventory with\u001b[0m",
+        "\u001b[1;35mscript plugin: problem running /var/lib/awx/projects/rajasekhar/inventory\u001b[0m",
+        "\u001b[1;35m--list ([Errno 8] Exec format error:\u001b[0m",
+        "\u001b[1;35m'/var/lib/awx/projects/rajasekhar/inventory')\u001b[0m",
+        "\u001b[1;35m[WARNING]:  * Failed to parse /var/lib/awx/projects/rajasekhar/inventory with\u001b[0m",
+        "\u001b[1;35myaml plugin: We were unable to read either as JSON nor YAML, these are the\u001b[0m",
+        "\u001b[1;35merrors we got from each: JSON: Expecting value: line 1 column 2 (char 1)\u001b[0m",
+        "\u001b[1;35mSyntax Error while loading YAML.   did not find expected <document start>  The\u001b[0m",
+        "\u001b[1;35merror appears to be in '/var/lib/awx/projects/rajasekhar/inventory': line 2,\u001b[0m",
+        "\u001b[1;35mcolumn 1, but may be elsewhere in the file depending on the exact syntax\u001b[0m",
+        "\u001b[1;35mproblem.  The offending line appears to be:  [test] 172.16.3.88\u001b[0m",
+        "\u001b[1;35mansible_user=root ansible_ssh_password=int123$%^ ^ here\u001b[0m",
+        "\u001b[1;35m[WARNING]:  * Failed to parse /var/lib/awx/projects/rajasekhar/inventory with\u001b[0m",
+        "\u001b[1;35mini plugin: /var/lib/awx/projects/rajasekhar/inventory:58: Expected key=value,\u001b[0m",
+        "\u001b[1;35mgot: become: true\u001b[0m",
+        "\u001b[1;35m[WARNING]: Unable to parse /var/lib/awx/projects/rajasekhar/inventory as an\u001b[0m",
+        "\u001b[1;35minventory source\u001b[0m",
+        "\u001b[1;35m[WARNING]: No inventory was parsed, only implicit localhost is available\u001b[0m",
+        "\u001b[1;35m[WARNING]: provided hosts list is empty, only localhost is available. Note that\u001b[0m",
+        "\u001b[1;35mthe implicit localhost does not match 'all'\u001b[0m",
+        "\u001b[1;35m[WARNING]: Could not match supplied host pattern, ignoring: 172.16.3.16\u001b[0m",
+        "",
+        "PLAY [package installation] ****************************************************",
+        "\u001b[0;36mskipping: no hosts matched\u001b[0m",
+        "",
+        "PLAY RECAP *********************************************************************"
+    ],
+    "version": "2.0.0"
+}

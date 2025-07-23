@@ -1,0 +1,23 @@
+---
+- name: Annotate response ratios in CSV
+  hosts: 172.16.3.42
+  gather_facts: false
+  vars:
+    input_csv: "/var/lib/awx/projects/ruthupavan/final_calltype_summary.csv"     # Replace with your actual file
+    output_csv: "/var/lib/awx/projects/ruthupavan/report.csv"   # Final output file
+  tasks:
+    - name: Add Remarks to CSV using awk
+      shell: |
+        {
+          head -n 1 "{{ input_csv }}" | awk -F',' '{ print $0 ",Remarks" }'
+          tail -n +2 "{{ input_csv }}" | awk -F',' '{
+            ratio = $5;
+            gsub(/%/, "", ratio);
+            ratio = ratio + 0;
+            remark = (ratio > 15) ? "Delay in Processing" :
+                     (ratio >= 0) ? "Healthy" : "Not an Issue";
+            print $0 "," remark
+          }'
+        } > "{{ output_csv }}"
+      args:
+        executable: /bin/bash

@@ -1,0 +1,5 @@
+---
+- name: Add time to each row
+  set_fact:
+    updated_csv_content: "{{ updated_csv_content + [csv_row + ',' + current_date_time] }}"
+

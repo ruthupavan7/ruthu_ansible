@@ -1,0 +1,18 @@
+---
+- name: Extract columns 1, 55, 56 from a CSV file
+  hosts: localhost
+  gather_facts: false
+ 
+  vars:
+    source_csv: "/var/lib/awx/projects/ruthupavan/masterlogfile.txt"
+    output_csv: "/var/lib/awx/projects/ruthupavan/extracted.csv"
+ 
+  tasks:
+    - name: Create or empty the output CSV and add header
+      copy:
+        dest: "{{ output_csv }}"
+        content: "calltype,account_id,system_id\n"
+ 
+    - name: Extract selected columns from CSV file
+      shell: |
+        awk -F'|' '{print $1","$55","$56}' "{{ source_csv }}" >> "{{ output_csv }}"

@@ -1,0 +1,28 @@
+---
+- name: Extract last 15 minutes modified records
+  hosts: localhost
+  tasks:
+    - name: Get current time
+      ansible.builtin.command: date "+%Y-%m-%d %H:%M:%S"
+      register: current_time
+
+    - name: Calculate time 15 minutes ago
+      ansible.builtin.command: date -d "-15 minutes" "+%Y-%m-%d %H:%M:%S"
+      register: past_time
+
+    - name: Filter records from CSV
+      ansible.builtin.shell: |
+        awk -F',' -v start="{{ past_time.stdout }}" -v end="{{ current_time.stdout }}" \
+        '$6 >= start && $6 <= end' "/var/lib/awx/projects/ruthupavan/last_15min_logs.txt"
+      register: filtered_data
+
+    - name: Ensure filtered data is not empty
+      ansible.builtin.fail:
+        msg: "No records found in the last 15 minutes!"
+      when: filtered_data.stdout == ""
+
+    - name: Write filtered data to CSV
+      ansible.builtin.copy:
+        dest: /var/lib/awx/projects/ruthupavan/updated.csv
+        content: "Billing_ID,Header_ID,Transaction_Count,Total_Amount,Customer_ID,Processing_Time(IST),Status\n{{ filtered_data.stdout }}"
+      delegate_to: localhost

@@ -1,0 +1,72 @@
+---
+- name: Filter last 15-minute rows from recently updated CSV files
+  hosts: localhost
+  become: true
+
+  vars:
+    log_dir: "/var/lib/awx/projects/ruthupavan/billing_files/"
+    output_csv: "/var/lib/awx/projects/ruthupavan/last_15min_logs.csv"
+    datetime_format: "%Y-%m-%d %H:%M:%S"
+
+  tasks:
+
+    - name: Find CSV files modified in the last 15 minutes
+      find:
+        paths: "{{ log_dir }}"
+        patterns: "*.csv"
+        age: 15m
+        age_stamp: mtime
+      register: recent_logs
+
+    - name: Initialize output CSV with header
+      copy:
+        dest: "{{ output_csv }}"
+        content: "Billing_ID,Header_ID,Transaction_Count,Total_Amount,Customer_ID,Processing_Time(IST),Status\n"
+
+    - name: Get current IST time and 15 minutes ago
+      set_fact:
+        now_ist: "{{ lookup('pipe', 'TZ=Asia/Kolkata date +\"%Y-%m-%d %H:%M:%S\"') | to_datetime(datetime_format) }}"
+        fifteen_min_ago: "{{ lookup('pipe', 'TZ=Asia/Kolkata date -d \"-15 minutes\" +\"%Y-%m-%d %H:%M:%S\"') | to_datetime(datetime_format) }}"
+
+    - name: Read and process each recent file
+      vars:
+        file_path: "{{ item.path }}"
+      loop: "{{ recent_logs.files }}"
+      loop_control:
+        loop_var: "{{ item }}"
+      when: recent_logs.files | length > 0
+      block:
+
+        - name: Read CSV content
+          slurp:
+            src: "{{ file_path }}"
+          register: file_data
+
+        - name: Decode and split lines
+          set_fact:
+            csv_lines: "{{ file_data.content | b64decode | split('\n') }}"
+            header: "{{ csv_lines[0] }}"
+            rows: "{{ csv_lines[1:] | select('match', '^\\S') | list }}"
+
+        - name: Filter rows from last 15 minutes
+          set_fact:
+            filtered_rows: >-
+              {{
+                rows
+                | selectattr('split(\",\")[5]', 'defined')
+                | selectattr('split(\",\")[5]', 'search', '^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$')
+                | selectattr('split(\",\")[5] | to_datetime(datetime_format)', 'ge', fifteen_min_ago)
+                | selectattr('split(\",\")[5] | to_datetime(datetime_format)', 'le', now_ist)
+                | list
+              }}
+
+        - name: Append filtered rows to output CSV
+          lineinfile:
+            path: "{{ output_csv }}"
+            line: "{{ item }}"
+            insertafter: EOF
+          loop: "{{ filtered_rows }}"
+          loop_control:
+            loop_var: item
+          when: filtered_rows is defined and filtered_rows | length > 0
+

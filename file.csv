@@ -1,0 +1,12 @@
+NetworkManager,x86_64,redhat,172.160.30.42
+NetworkManager-config-server,noarch,redhat,172.160.30.42
+NetworkManager-initscripts-updown,noarch,redhat,172.160.30.42
+NetworkManager-libnm,x86_64,redhat,172.160.30.42
+NetworkManager-team,x86_64,redhat,172.160.30.42
+NetworkManager-tui,x86_64,redhat,172.160.30.42
+PackageKit,x86_64,redhat,172.160.30.42
+PackageKit-glib,x86_64,redhat,172.160.30.42
+adcli,x86_64,redhat,172.160.30.42
+alsa-lib,x86_64,redhat,172.160.30.42
+annobin,x86_64,redhat,172.160.30.42
+ansible,noarch,redhat,172.160.30.42
